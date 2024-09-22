@@ -16,6 +16,8 @@ struct myfirstApp: App {
         WindowGroup {
             ContentView()
                 .environment(appModel)
+                .background(.black.opacity(0.8))
+                
         }
 
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
@@ -30,4 +32,5 @@ struct myfirstApp: App {
         }
         .immersionStyle(selection: .constant(.mixed), in: .mixed)
      }
+    
 }
