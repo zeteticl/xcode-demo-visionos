@@ -1,14 +1,7 @@
-/*
-See the LICENSE.txt file for this sample’s licensing information.
-
-Abstract:
-The main entry point of the Hello World experience.
-*/
-
 import SwiftUI
 import WorldAssets
+import ARKit
 
-/// The main entry point of the Hello World experience.
 @main
 struct WorldApp: App {
     // The view model.
@@ -17,14 +10,32 @@ struct WorldApp: App {
     // The immersion styles for different modules.
     @State private var orbitImmersionStyle: ImmersionStyle = .mixed
     @State private var solarImmersionStyle: ImmersionStyle = .full
+    let formats = CameraVideoFormat.supportedVideoFormats(for: .main, cameraPositions:[.left])
+    
+    let cameraFrameProvider = CameraFrameProvider()
+    
+    var arKitSession = ARKitSession()
+    var pixelBuffer: CVPixelBuffer?
 
     var body: some Scene {
         // The main window that presents the app's modules.
         WindowGroup(String(localized: "Hello World",
-                           comment: "The name of the app. This is the typical title for many example apps in programming tutorials."),
-                    id: "modules") {
+                          comment: "The name of the app. This is the typical title for many example apps in programming tutorials."),
+                     id: "modules") {
             Modules()
                 .environment(model)
+                .onAppear {
+                    // 在這裡請求授權
+                    Task {
+                                               await arKitSession.queryAuthorization(for: [.cameraAccess])
+                        do {
+                            try await arKitSession.run([cameraFrameProvider])
+                        } catch {
+                            return
+                        }
+                    }
+                    
+                }
         }
         .windowStyle(.plain)
 
@@ -36,16 +47,14 @@ struct WorldApp: App {
         .windowStyle(.volumetric)
         .defaultSize(width: 0.6, height: 0.6, depth: 0.6, in: .meters)
 
-        // An immersive space that places the Earth with some of its satellites
-        // in your surroundings.
+        // An immersive space that places the Earth with some of its satellites in your surroundings.
         ImmersiveSpace(id: Module.orbit.name) {
             Orbit()
                 .environment(model)
         }
         .immersionStyle(selection: $orbitImmersionStyle, in: .mixed)
 
-        // An immersive Space that shows the Earth, Moon, and Sun as seen from
-        // Earth orbit.
+        // An immersive Space that shows the Earth, Moon, and Sun as seen from Earth orbit.
         ImmersiveSpace(id: Module.solar.name) {
             SolarSystem()
                 .environment(model)
