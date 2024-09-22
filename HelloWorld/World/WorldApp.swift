@@ -27,12 +27,16 @@ struct WorldApp: App {
                 .onAppear {
                     // 在這裡請求授權
                     Task {
-                                               await arKitSession.queryAuthorization(for: [.cameraAccess])
-                        do {
-                            try await arKitSession.run([cameraFrameProvider])
-                        } catch {
-                            return
-                        }
+                                       let result =        await arKitSession.queryAuthorization(for: [.cameraAccess])
+//                        do {
+//                            try await arKitSession.run([cameraFrameProvider])
+//                        } catch {
+//                            return
+//                        }
+                        
+                        print("Camera access ",result)
+                       
+                        
                     }
                     
                 }
